@@ -104,9 +104,12 @@ IMPORTANT REMINDERS:
 - Dates in itinerary should be sequential starting from {start_date}
 - All activities must have realistic times and durations
 - Response must be valid JSON only - no markdown, no explanations, just the JSON object
-- Ensure all JSON strings are properly escaped
+- Ensure all JSON strings are properly escaped (use \" for quotes inside strings)
 - All fields must be filled with relevant, specific information
 - Consider the {budget_level} budget level when suggesting places and activities
+- CRITICAL: Double-check JSON syntax before responding - ensure all commas are present between array elements and object properties
+- CRITICAL: If a string value contains quotes, escape them with backslashes (e.g., "He said \"hello\"")
+- CRITICAL: Every array element and object property must be separated by commas - no exceptions
 """
 
 

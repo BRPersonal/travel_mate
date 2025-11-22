@@ -49,10 +49,12 @@ def _extract_json_from_response(response_text: str) -> str:
     if not response_text or not response_text.strip():
         raise ValueError("Empty response from LLM")
 
+    # First try to extract JSON from markdown code blocks
     match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", response_text, re.DOTALL)
     if match:
         return match.group(1).strip()
 
+    # Then try to find JSON object boundaries
     match = re.search(r"\{.*\}", response_text, re.DOTALL)
     if match:
         return match.group(0).strip()
@@ -60,12 +62,90 @@ def _extract_json_from_response(response_text: str) -> str:
     return response_text.strip()
 
 
-def _parse_llm_response(response_content: str) -> Dict[str, Any]:
-    json_str = _extract_json_from_response(response_content)
-    data = json.loads(json_str)
+def _fix_common_json_issues(json_str: str, error_pos: int = None) -> str:
+    """Attempt to fix common JSON syntax errors from LLM responses"""
+    fixed = json_str
+    
+    # Fix trailing commas before closing braces/brackets (safe fix)
+    fixed = re.sub(r',(\s*[}\]])', r'\1', fixed)
+    
+    # If we know the error position, try to fix around that area first
+    if error_pos is not None:
+        # Look for missing comma before the error position
+        start = max(0, error_pos - 150)
+        end = min(len(fixed), error_pos + 150)
+        before_error = fixed[:start]
+        error_region = fixed[start:end]
+        after_error = fixed[end:]
+        
+        # Try to insert comma where it's missing in the error region
+        # Pattern: } or ] or " followed by whitespace and then { or [ or "
+        error_region = re.sub(r'([}\]"])(\s+)([\[{"])', r'\1,\2\3', error_region)
+        fixed = before_error + error_region + after_error
+    
+    # Global fixes for common patterns (conservative)
+    # Fix missing comma between object properties (} followed by ")
+    fixed = re.sub(r'\}(\s*")', r'},\1', fixed)
+    
+    # Fix missing comma between array elements (] followed by {)
+    fixed = re.sub(r'\](\s*\{)', r'],\1', fixed)
+    
+    return fixed
 
-    if not isinstance(data, dict) or "location" not in data or not isinstance(data["sightseeing_places"], list):
-        raise ValueError("Invalid JSON structure")
+
+def _parse_llm_response(response_content: str) -> Dict[str, Any]:
+    """
+    Parse LLM response and handle common JSON parsing errors.
+    Logs the problematic JSON for debugging if parsing fails.
+    """
+    json_str = _extract_json_from_response(response_content)
+    
+    # First attempt: try parsing directly
+    try:
+        data = json.loads(json_str)
+    except json.JSONDecodeError as e:
+        logger.warning(
+            f"Initial JSON parsing failed at line {e.lineno}, column {e.colno}: {e.msg}. "
+            f"Attempting to fix common issues..."
+        )
+        
+        # Log the problematic section for debugging
+        error_pos = e.pos if hasattr(e, 'pos') else None
+        if error_pos:
+            start = max(0, error_pos - 200)
+            end = min(len(json_str), error_pos + 200)
+            problematic_section = json_str[start:end]
+            logger.debug(f"Problematic JSON section around error (pos {error_pos}): ...{problematic_section}...")
+        
+        # Attempt to fix common issues, passing error position for targeted fixes
+        fixed_json = _fix_common_json_issues(json_str, error_pos)
+        
+        try:
+            # Second attempt with fixed JSON
+            data = json.loads(fixed_json)
+            logger.info("Successfully parsed JSON after applying fixes")
+        except json.JSONDecodeError as e2:
+            # If still failing, log the full response for debugging
+            logger.error(
+                f"Failed to parse JSON even after fixes. Error at line {e2.lineno}, "
+                f"column {e2.colno}: {e2.msg}. Full response length: {len(json_str)} chars"
+            )
+            logger.debug(f"Full JSON response (first 5000 chars): {json_str[:5000]}")
+            logger.debug(f"Full JSON response (last 5000 chars): {json_str[-5000:]}")
+            raise ValueError(
+                f"Invalid JSON in LLM response. Parse error at line {e2.lineno}, "
+                f"column {e2.colno}: {e2.msg}"
+            ) from e2
+    
+    # Validate the parsed structure
+    if not isinstance(data, dict):
+        raise ValueError("Parsed JSON is not a dictionary")
+    
+    if "location" not in data:
+        raise ValueError("Missing 'location' field in JSON response")
+    
+    if "sightseeing_places" not in data or not isinstance(data["sightseeing_places"], list):
+        raise ValueError("Missing or invalid 'sightseeing_places' field in JSON response")
 
     return data
 
