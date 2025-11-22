@@ -39,10 +39,7 @@ def generate_travel_plan_pdf(travel_request: TravelRequest, travel_response: Tra
     """
     Generate a PDF file (as bytes) for the given travel request/response.
     """
-    logger.info(
-        f"Generating travel plan PDF for email='{getattr(travel_request, 'email', 'N/A')}', "
-        f"location='{travel_request.location}', days={travel_request.number_of_days}"
-    )
+    logger.info(f"Generating travel plan PDF for location='{travel_request.location}', days={travel_request.number_of_days}")
 
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)

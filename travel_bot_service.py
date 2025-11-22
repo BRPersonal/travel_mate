@@ -52,8 +52,8 @@ class TravelBotService:
         travel_collection = mongodb_manager.get_collection(CollectionNames.TRAVEL_COLLECTION)
         await travel_collection.insert_one({
             "email": email,
-            "request" : travel_request.model_dump(exclude_none=True),
-            "response" : travel_response.model_dump(exclude_none=True)
+            "request" : travel_request.model_dump(exclude_none=True,mode='json'),
+            "response" : travel_response.model_dump(exclude_none=True,mode='json')
           })
     
     async def download_travel_plan(self, email: str) -> bytes:

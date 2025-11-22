@@ -93,6 +93,24 @@ response
     "status_code": 200
 }
 
+Create Travel Plan (requires user role)
+POST /api/v1/travelbot/plan
+request
+{
+    "location": "Rome",
+    "number_of_days": 7,
+    "start_date": "2025-12-24",
+    "preferred_language" : "english"
+}
+
+Get all travel plans (requires admin role)
+GET /api/v1/travelbot/plan/all
+
+
+
+Download Travel Plan pdf (requires user role)
+GET /api/v1/travelbot/plan
+
 Getting into mongo container shell
 $ docker exec -it ai-travel-mate-mongodb mongosh -u admin -p password123 --authenticationDatabase admin ai_travel_bot
 ai_travel_bot> show collections;

@@ -1,4 +1,4 @@
-from datetime import date,datetime
+from datetime import date,datetime,time
 from enum import Enum
 from pydantic import BaseModel, Field,field_validator
 from typing import List, Optional
@@ -39,6 +39,13 @@ class TravelRequest(BaseModel):
         description="Budget level: budget, medium, or luxury"
     )
 
+    @field_validator('start_date', mode='before')
+    @classmethod
+    def parse_date(cls, v):
+        if isinstance(v, datetime):
+            return v.date()  # Convert datetime to date
+        return v  # Already a date or string
+
     @field_validator('start_date')
     @classmethod
     def validate_start_date(cls, v: date) -> date:
@@ -46,6 +53,11 @@ class TravelRequest(BaseModel):
         if v < date.today():
             raise ValueError('Start date cannot be in the past')
         return v
+
+    class Config:
+        json_encoders = {
+            date: lambda v: datetime.combine(v, time.min)
+        }    
 
 
 class SightseeingPlace(BaseModel):
@@ -83,7 +95,7 @@ class DailyActivity(BaseModel):
 class DayItinerary(BaseModel):
     """Model for a single day's itinerary"""
     day_number: int = Field(..., description="Day number in the trip", ge=1)
-    day_date: date = Field(..., alias="date", description="Date for this day")
+    day_date: date = Field(...,  description="Date for this day")
     title: str = Field(
         ..., 
         description="Theme or title for the day",
@@ -102,6 +114,18 @@ class DayItinerary(BaseModel):
         default=None,
         description="Notes about accommodation or location to stay"
     )
+
+    @field_validator('day_date', mode='before')
+    @classmethod
+    def parse_date(cls, v):
+        if isinstance(v, datetime):
+            return v.date()  # Convert datetime to date
+        return v  # Already a date or string
+
+    class Config:
+        json_encoders = {
+            date: lambda v: datetime.combine(v, time.min)
+        }    
 
 
 class TravelResponse(BaseModel):
@@ -145,10 +169,34 @@ class TravelResponse(BaseModel):
         description="Expected weather during the trip dates"
     )
 
+    @field_validator('start_date', 'end_date', mode='before')
+    @classmethod
+    def parse_date(cls, v):
+        if isinstance(v, datetime):
+            return v.date()  # Convert datetime to date
+        return v  # Already a date or string
+
+    class Config:
+        json_encoders = {
+            date: lambda v: datetime.combine(v, time.min)
+        }    
+
 class TravelRecord(BaseModel):
-  email: str = Field(..., description="email of person who is going to tour")
-  location: str = Field(...,description="travel destination spot")
-  number_of_days: int = Field(...,description="duration of trip")
-  start_date: date = Field(..., description="Start date of the trip in YYYY-MM-DD format")
-  end_date: date = Field(..., description="Trip end date")
+    email: str = Field(..., description="email of person who is going to tour")
+    location: str = Field(...,description="travel destination spot")
+    number_of_days: int = Field(...,description="duration of trip")
+    start_date: date = Field(..., description="Start date of the trip in YYYY-MM-DD format")
+    end_date: date = Field(..., description="Trip end date")
+
+    @field_validator('start_date', 'end_date', mode='before')
+    @classmethod
+    def parse_date(cls, v):
+        if isinstance(v, datetime):
+            return v.date()  # Convert datetime to date
+        return v  # Already a date or string
+
+    class Config:
+        json_encoders = {
+            date: lambda v: datetime.combine(v, time.min)
+        }  
 
