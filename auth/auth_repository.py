@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from sqlalchemy import create_engine, text
 from .auth_models import SignUpRequest,AppUser
-from quiz_bot_exception import TravelBotException
+from travel_bot_exception import TravelBotException
 from models.status_code import sc
 from utils.config import settings
 import bcrypt

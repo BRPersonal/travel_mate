@@ -32,6 +32,18 @@ def _get_travel_plan_generation_chain():
         _cached_plan_chain = prompt | llm
     return _cached_plan_chain
 
+def _get_request_data(travel_request: TravelRequest) -> Dict[str,Any]:
+  result = dict[str,Any]()
+
+  result["location"] = travel_request.location
+  result["number_of_days"] = travel_request.number_of_days
+  result["start_date"] = travel_request.start_date.strftime('%Y-%m-%d')
+  result["preferred_language"] = travel_request.preferred_language
+  result["interests_str"] = ", ".join(travel_request.interests) if travel_request.interests else "general tourism"
+  result["budget_level"] = travel_request.budget_level
+
+  return result
+
 
 def _extract_json_from_response(response_text: str) -> str:
     if not response_text or not response_text.strip():
@@ -58,6 +70,8 @@ def _parse_llm_response(response_content: str) -> Dict[str, Any]:
     return data
 
 async def generate_travel_plan(travel_request: TravelRequest) -> TravelResponse:
+    request_data = _get_request_data(travel_request)
     travel_chain = _get_travel_plan_generation_chain()
-    response = await travel_chain.ainvoke(travel_request)
-    return TravelResponse(**response.content)
+    response = await travel_chain.ainvoke(request_data)
+    response_content = _parse_llm_response(response.content)
+    return TravelResponse(**response_content)

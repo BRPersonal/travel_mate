@@ -1,4 +1,4 @@
-from quiz_bot_exception import TravelBotException
+from travel_bot_exception import TravelBotException
 from models.status_code import sc
 from typing import Optional
 

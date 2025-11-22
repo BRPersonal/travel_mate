@@ -11,10 +11,10 @@ from models.status_code import sc
 from utils.config import settings
 from contextlib import asynccontextmanager
 from utils.logger import logger
-from quiz_bot_exception import TravelBotException
+from travel_bot_exception import TravelBotException
 from utils.data_sources_manager import data_sources_manager
 from datetime import datetime, timezone
-from quiz_bot_router import quizbot_router
+from travel_bot_router import travelbot_router
 from auth.auth_routes import auth_router
 
 @asynccontextmanager
@@ -24,7 +24,7 @@ async def lifespan_handler(app: FastAPI):
     """
     # Startup
     try:
-        logger.info("Starting AI QuizBot...")
+        logger.info("Starting Travel Mate...")
         await data_sources_manager.connect_all()
         logger.info("Application startup completed successfully")
     except Exception as e:
@@ -35,7 +35,7 @@ async def lifespan_handler(app: FastAPI):
     
     # Shutdown
     try:
-        logger.info("Shutting down AI QuizBot...")
+        logger.info("Shutting down Travel Mate...")
         await data_sources_manager.disconnect_all()
         logger.info("Application shutdown completed successfully")
     except Exception as e:
@@ -99,7 +99,7 @@ async def generic_exception_handler(request: Request, exc: Exception):
         content=error_response.model_dump(exclude_none=True),
     )
 
-app.include_router(quizbot_router)
+app.include_router(travelbot_router)
 app.include_router(auth_router)
 
 # Favicon endpoint to prevent 404 logs

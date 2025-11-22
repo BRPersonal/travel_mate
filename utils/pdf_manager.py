@@ -132,7 +132,7 @@ def generate_travel_plan_pdf(travel_request: TravelRequest, travel_response: Tra
                 y = height - 2 * cm
 
             c.setFont("Helvetica-Bold", 14)
-            c.drawString(margin_x, y, f"Day {day.day_number} - {day.date}: {day.title}")
+            c.drawString(margin_x, y, f"Day {day.day_number} - {day.day_date}: {day.title}")
             y -= 18
 
             c.setFont("Helvetica", 12)

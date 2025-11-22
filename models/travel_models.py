@@ -83,7 +83,7 @@ class DailyActivity(BaseModel):
 class DayItinerary(BaseModel):
     """Model for a single day's itinerary"""
     day_number: int = Field(..., description="Day number in the trip", ge=1)
-    date: date = Field(..., description="Date for this day")
+    day_date: date = Field(..., alias="date", description="Date for this day")
     title: str = Field(
         ..., 
         description="Theme or title for the day",
