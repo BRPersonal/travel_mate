@@ -74,8 +74,8 @@ class TravelBotService:
                     details={"email": email}
                 )
 
-            request_data = doc.get("request") or {}
-            response_data = doc.get("response") or {}
+            request_data = doc.get("request")
+            response_data = doc.get("response")
 
             travel_request = TravelRequest(**request_data)
             travel_response = TravelResponse(**response_data)

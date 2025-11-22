@@ -20,6 +20,8 @@ You just need to synch the dependencies
 $ uv sync
 
 $ docker-compose up -d
+
+Get into postgre container shell and execute create script
 $ docker exec -it ai-travel-mate-postgresql psql -U postgres -d ai_travel_bot
 
 --Postgre script
@@ -90,3 +92,8 @@ response
     "message": "Login successful",
     "status_code": 200
 }
+
+Getting into mongo container shell
+$ docker exec -it ai-travel-mate-mongodb mongosh -u admin -p password123 --authenticationDatabase admin ai_travel_bot
+ai_travel_bot> show collections;
+ai_travel_bot> db.travel_collection.find({})
