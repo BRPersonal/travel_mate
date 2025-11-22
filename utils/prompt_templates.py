@@ -74,7 +74,7 @@ You must respond with ONLY a valid JSON object that matches this exact schema. D
   "itinerary": [
     {{
       "day_number": 1,
-      "date": "YYYY-MM-DD",
+      "day_date": "YYYY-MM-DD",
       "title": "Day theme or title",
       "activities": [
         {{
