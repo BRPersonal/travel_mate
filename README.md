@@ -394,3 +394,20 @@ Getting into mongo container shell
 $ docker exec -it ai-travel-mate-mongodb mongosh -u admin -p password123 --authenticationDatabase admin ai_travel_bot
 ai_travel_bot> show collections;
 ai_travel_bot> db.travel_collection.find({})
+
+code walk-thu order
+-----------
+1).env
+2)utils/config.py
+3)utils/logger.py
+4)utils/mongo_db_manager.py
+5)models/travel_models.py
+6)mongo_collection_names.py
+7)utils/prompt_templates.py
+8)utils/llm_manager.py
+9)travel_bot_exception.py
+10)travel_bot_service.py
+11)travel_bot_router.py
+12)app.py
+
+
