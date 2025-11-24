@@ -388,7 +388,7 @@ response
 
 
 Download Travel Plan pdf (requires user role)
-GET /api/v1/travelbot/plan
+GET /api/v1/travelbot/plan/download?start_date=2026-12-25
 
 Getting into mongo container shell
 $ docker exec -it ai-travel-mate-mongodb mongosh -u admin -p password123 --authenticationDatabase admin ai_travel_bot

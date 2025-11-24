@@ -1,6 +1,7 @@
 from fastapi import APIRouter, BackgroundTasks, Depends, Response, File, UploadFile
 from pydantic import BaseModel
 from typing import List
+from datetime import date
 from models.travel_models import TravelRequest
 from travel_bot_service import travelbot_service
 from auth.auth_models import AuthenticatedUser
@@ -19,9 +20,10 @@ async def generate_travel_plan(
 
 @travelbot_router.get("/plan/download")
 async def download_travel_plan(
+    start_date: date,
     current_user: AuthenticatedUser = Depends(auth_middleware.get_current_user),
 ):
-    pdf_bytes = await travelbot_service.download_travel_plan(current_user.email)
+    pdf_bytes = await travelbot_service.download_travel_plan(current_user.email, start_date)
     filename = f"{current_user.firstName}-travelPlan.pdf"
     headers = {
         "Content-Disposition": f'attachment; filename="{filename}"'

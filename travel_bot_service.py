@@ -78,22 +78,30 @@ class TravelBotService:
             "response" : travel_response.model_dump(exclude_none=True,mode='json')
           })
     
-    async def download_travel_plan(self, email: str) -> bytes:
+    async def download_travel_plan(self, email: str,start_date:date) -> bytes:
         """
         Fetch the stored travel request/response for the given email and
         return a generated PDF as raw bytes.
         """
         try:
-            logger.info(f"Downloading travel plan PDF for email='{email}'")
+            logger.info(f"Downloading travel plan PDF for email='{email}' and start_date={start_date}")
 
             travel_collection = mongodb_manager.get_collection(CollectionNames.TRAVEL_COLLECTION)
-            doc = await travel_collection.find_one({"email": email})
+            start_datetime = datetime.combine(start_date, time.min)  # datetime object
+            start_datetime_iso = start_datetime.isoformat()  # "2025-12-25T00:00:00" (matches stored format)
+
+            doc = await travel_collection.find_one(
+              {
+                "email": email,
+                "request.start_date": start_datetime_iso
+              }
+            )
 
             if not doc:
                 raise TravelBotException(
-                    message="No travel plan found for the given email",
+                    message="No travel plan found for the given email and start date",
                     error_code=sc.ENTITY_NOT_FOUND,
-                    details={"email": email}
+                    details={"email": email, "start_date": start_date}
                 )
 
             request_data = doc.get("request")
