@@ -2,6 +2,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from typing import Optional
 from .logger import logger
 from .config import settings
+from pymongo import ASCENDING, DESCENDING
 from mongo_collection_names import CollectionNames
 
 class MongoDBManager:
@@ -25,8 +26,12 @@ class MongoDBManager:
 
     async def _create_indexes(self):
         try:
-            #replace the following statement with your project specific indexes
-            await self.database[CollectionNames.TRAVEL_COLLECTION].create_index("email", unique=True)
+            #create unique index on email + start_date
+            await self.database[CollectionNames.TRAVEL_COLLECTION].create_index(
+                    [("email", ASCENDING), ("request.start_date", ASCENDING)],
+                    unique=True, 
+                    name="email_request_start_date_idx",
+                )            
             logger.info("MongoDB indexes created successfully")
         except Exception as e:
             logger.warning(f"Error creating MongoDB indexes: {str(e)}")

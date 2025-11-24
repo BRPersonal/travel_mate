@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date, time
 from models.api_responses import SuccessResponse
 from models.status_code import sc
 from models.travel_models import *
@@ -25,6 +25,14 @@ class TravelBotService:
               f"days={travel_request.number_of_days}"
           )
 
+          # Check if plan already exists
+          if await self._is_plan_exists(email, travel_request.start_date):
+              raise TravelBotException(
+                  message="Travel plan already exists for this email and start date",
+                  error_code=sc.DUPLICATE_ENTITY,
+                  details={"email": email, "start_date": travel_request.start_date.isoformat()}
+              )
+
           # Call LLM manager to generate the travel plan
           travel_response: TravelResponse = await llm_manager.generate_travel_plan(travel_request)
 
@@ -47,6 +55,20 @@ class TravelBotService:
               error_code=sc.INTERNAL_SERVER_ERROR,
               original_exception=exc,
           )
+
+    async def _is_plan_exists(self, email:str, start_date:date) -> bool:
+        """
+        Check if a travel plan already exists for the given email and start_date.
+        Returns True if a plan exists, False otherwise.
+        """
+        travel_collection = mongodb_manager.get_collection(CollectionNames.TRAVEL_COLLECTION)
+        start_datetime = datetime.combine(start_date, time.min)  # datetime object
+        start_datetime_iso = start_datetime.isoformat()  # "2025-12-25T00:00:00" (matches stored format)
+        doc = await travel_collection.find_one({
+            "email": email,
+            "request.start_date": start_datetime_iso
+        })
+        return doc is not None
 
     async def _persist_travel_data(self, email:str,travel_request: TravelRequest, travel_response: TravelResponse) -> None:
         travel_collection = mongodb_manager.get_collection(CollectionNames.TRAVEL_COLLECTION)

@@ -154,5 +154,5 @@ async def generate_travel_plan(travel_request: TravelRequest) -> TravelResponse:
     travel_chain = _get_travel_plan_generation_chain()
     response = await travel_chain.ainvoke(request_data)
     response_content = _parse_llm_response(response.content)
-    logger.debug(f"response_content={json.dumps(response_content,indent=4)}")
+    logger.debug(f"response_content=\n{json.dumps(response_content,indent=4)}")
     return TravelResponse(**response_content)
